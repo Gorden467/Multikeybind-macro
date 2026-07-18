@@ -150,8 +150,17 @@ namespace Multikeys
                 if (_loading || Current == null) return;
                 Current.Name = _txtName.Text;
                 int idx = _lstMacros.SelectedIndex;
-                _lstMacros.Items[idx] = Current; // Anzeige aktualisieren
-                _lstMacros.SelectedIndex = idx;
+                if (idx >= 0)
+                {
+                    // Listenanzeige aktualisieren, ohne den Editor neu zu laden.
+                    // Ohne diesen Schutz wuerde die Auswahl kurz auf -1 springen,
+                    // LoadEditor(null) das Textfeld deaktivieren und der Fokus ginge
+                    // nach jedem Buchstaben verloren.
+                    _loading = true;
+                    _lstMacros.Items[idx] = Current;
+                    _lstMacros.SelectedIndex = idx;
+                    _loading = false;
+                }
                 Save();
             };
             box.Controls.Add(_txtName);
