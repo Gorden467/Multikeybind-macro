@@ -26,6 +26,23 @@ dadurch **mit jeder Tastatur** – unabhängig vom Hersteller, ohne spezielle Tr
 - Windows mit **.NET Framework 4** (auf Windows 10/11 vorinstalliert).
 - Kein zusätzliches SDK nötig – gebaut wird mit dem in Windows enthaltenen C#-Compiler.
 
+## Einrichtung (empfohlen)
+
+Doppelklick auf **`Install-Multikeys.cmd`**. Das Einrichtungs-Skript
+
+1. prüft, ob **.NET Framework 4** vorhanden ist, und installiert es bei Bedarf
+   automatisch (fragt dann nach Administratorrechten),
+2. baut `Multikeys.exe`, falls sie noch nicht existiert,
+3. legt eine **Desktop-Verknüpfung** und eine **Autostart-Verknüpfung** an,
+4. startet Multikeys.
+
+> Warum ein Starter und keine Prüfung in der App selbst? Die `.exe` braucht
+> .NET Framework 4 schon zum Starten – deshalb übernimmt das Skript die Prüfung
+> und Installation *vor* dem Programmstart.
+
+Optionen: `Install-Multikeys.ps1 -NoAutostart` (kein Autostart),
+`-NoShortcuts` (keine Verknüpfungen), `-NoLaunch` (nicht starten).
+
 ## Bauen
 
 ```powershell
