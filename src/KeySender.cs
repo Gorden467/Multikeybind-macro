@@ -10,6 +10,12 @@ namespace Multikeys
     /// </summary>
     public static class KeySender
     {
+        /// <summary>
+        /// Wie Tasten gesendet werden. Wird aus der Konfiguration gesetzt.
+        /// Scancode = gut fuer Spiele; VirtualKey = fuer manche normalen Programme.
+        /// </summary>
+        public static KeySendMethod Method = KeySendMethod.Scancode;
+
         // Erweiterte Tasten (rechte Strg/Alt, Pfeiltasten, Pos1/Ende usw.) brauchen das Extended-Flag.
         private static readonly HashSet<int> ExtendedKeys = new HashSet<int>
         {
@@ -51,7 +57,7 @@ namespace Multikeys
         {
             uint scan = NativeMethods.MapVirtualKey((uint)vkCode, NativeMethods.MAPVK_VK_TO_VSC);
 
-            uint flags = NativeMethods.KEYEVENTF_SCANCODE;
+            uint flags = 0;
             if (keyUp)
                 flags |= NativeMethods.KEYEVENTF_KEYUP;
             if (ExtendedKeys.Contains(vkCode))
@@ -59,11 +65,23 @@ namespace Multikeys
 
             NativeMethods.INPUT input = new NativeMethods.INPUT();
             input.type = NativeMethods.INPUT_KEYBOARD;
-            input.u.ki.wVk = 0;
-            input.u.ki.wScan = (ushort)scan;
-            input.u.ki.dwFlags = flags;
             input.u.ki.time = 0;
             input.u.ki.dwExtraInfo = IntPtr.Zero;
+
+            if (Method == KeySendMethod.VirtualKey)
+            {
+                // Virtueller Tastencode: manche Programme erkennen nur diese Variante.
+                input.u.ki.wVk = (ushort)vkCode;
+                input.u.ki.wScan = (ushort)scan;
+                input.u.ki.dwFlags = flags; // ohne SCANCODE-Flag -> wVk ist massgeblich
+            }
+            else
+            {
+                // Scancode (Standard): gut fuer Spiele / DirectInput.
+                input.u.ki.wVk = 0;
+                input.u.ki.wScan = (ushort)scan;
+                input.u.ki.dwFlags = flags | NativeMethods.KEYEVENTF_SCANCODE;
+            }
 
             NativeMethods.SendInput(1, new[] { input }, System.Runtime.InteropServices.Marshal.SizeOf(typeof(NativeMethods.INPUT)));
         }

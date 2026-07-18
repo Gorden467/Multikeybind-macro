@@ -62,6 +62,7 @@ namespace Multikeys
             lock (_sync)
             {
                 _config = config ?? new AppConfig();
+                KeySender.Method = _config.SendMethod;
             }
         }
 

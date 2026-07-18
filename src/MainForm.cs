@@ -12,6 +12,7 @@ namespace Multikeys
 
         // Steuerelemente
         private CheckBox _chkEngine;
+        private ComboBox _cboMethod;
         private Label _lblHotkey;
         private Button _btnHkCapture;
         private Button _btnHkClear;
@@ -49,7 +50,10 @@ namespace Multikeys
             _engine.UpdateConfig(_config);
             _engine.Start();
 
+            _loading = true;
             _chkEngine.Checked = _config.EngineEnabled;
+            _cboMethod.SelectedIndex = (int)_config.SendMethod;
+            _loading = false;
             UpdateHotkeyLabel();
             RefreshMacroList();
             LoadEditor(null);
@@ -72,7 +76,7 @@ namespace Multikeys
 
             _chkEngine = new CheckBox();
             _chkEngine.Text = "Makros aktiv";
-            _chkEngine.SetBounds(12, 10, 150, 24);
+            _chkEngine.SetBounds(12, 11, 128, 24);
             _chkEngine.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
             _chkEngine.CheckedChanged += (s, e) =>
             {
@@ -82,9 +86,23 @@ namespace Multikeys
             };
             Controls.Add(_chkEngine);
 
+            Label lblMethod = new Label { Text = "Ausgabe:", Left = 148, Top = 14, Width = 58 };
+            Controls.Add(lblMethod);
+
+            _cboMethod = new ComboBox { Left = 206, Top = 10, Width = 244, DropDownStyle = ComboBoxStyle.DropDownList };
+            _cboMethod.Items.Add("Scancode (Standard, gut fuer Spiele)");
+            _cboMethod.Items.Add("Virtueller Tastencode (fuer Programme)");
+            _cboMethod.SelectedIndexChanged += (s, e) =>
+            {
+                if (_loading) return;
+                _config.SendMethod = (KeySendMethod)_cboMethod.SelectedIndex;
+                Save();
+            };
+            Controls.Add(_cboMethod);
+
             Label hint = new Label();
-            hint.Text = "Trigger-Taste druecken  ->  Tastenfolge wird abgespielt.  Funktioniert mit jeder Tastatur.";
-            hint.SetBounds(170, 14, 540, 20);
+            hint.Text = "Erkennt ein Programm die Tasten nicht? Andere Ausgabe waehlen.";
+            hint.SetBounds(458, 14, 254, 32);
             hint.ForeColor = Color.DimGray;
             Controls.Add(hint);
 

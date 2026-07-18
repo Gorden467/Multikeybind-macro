@@ -2,6 +2,13 @@ using System.Collections.Generic;
 
 namespace Multikeys
 {
+    /// <summary>Wie Tastendruecke an Windows gesendet werden.</summary>
+    public enum KeySendMethod
+    {
+        Scancode = 0,   // gut fuer Spiele / DirectInput
+        VirtualKey = 1  // wird von manchen normalen Programmen besser erkannt
+    }
+
     /// <summary>Art eines einzelnen Schrittes innerhalb eines Makros.</summary>
     public enum StepType
     {
@@ -111,12 +118,14 @@ namespace Multikeys
     public sealed class AppConfig
     {
         public bool EngineEnabled { get; set; }
+        public KeySendMethod SendMethod { get; set; }
         public Hotkey ToggleHotkey { get; set; }
         public List<Macro> Macros { get; set; }
 
         public AppConfig()
         {
             EngineEnabled = true;
+            SendMethod = KeySendMethod.Scancode;
             ToggleHotkey = new Hotkey();
             Macros = new List<Macro>();
         }

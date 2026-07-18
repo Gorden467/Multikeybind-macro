@@ -121,6 +121,22 @@ gerade deaktiviert sind. Mit **Entfernen** wird der Hotkey wieder gelöscht.
 | `src/MainForm.cs`      | Benutzeroberfläche. |
 | `src/Program.cs`       | Einstiegspunkt. |
 
+## Ein Programm erkennt die Tasten nicht?
+
+Oben rechts bei **Ausgabe** lässt sich umschalten, wie die Tasten gesendet werden:
+
+- **Scancode (Standard)** – funktioniert mit den meisten Spielen und Programmen.
+- **Virtueller Tastencode** – wird von manchen normalen Programmen (z. B. mancher
+  Schreib-/Lernsoftware) besser erkannt.
+
+Erkennt ein Programm die Tasten nicht, einfach die andere Ausgabe wählen. Für reinen
+**Text** ist zusätzlich der Schritt **„Text …"** ideal – er tippt Unicode-Zeichen, die
+praktisch jedes Schreibprogramm annimmt.
+
+> Hinweis: In Online-Spielen mit Kernel-Anti-Cheat (z. B. Fortnite, Valorant) werden
+> per Software erzeugte Eingaben absichtlich blockiert. Das lässt sich nicht umgehen
+> und ist dort auch nicht erlaubt.
+
 ## Hinweis
 
 Dieses Werkzeug automatisiert Tastatureingaben auf deinem eigenen Rechner.
