@@ -109,6 +109,7 @@ namespace Multikeys
     {
         private readonly MacroEngine _engine;
         private readonly ListBox _list;
+        private readonly CheckBox _chkPauses;
         private readonly Stopwatch _watch = new Stopwatch();
         private long _lastMs = -1;
 
@@ -124,13 +125,23 @@ namespace Multikeys
             StartPosition = FormStartPosition.CenterParent;
             MaximizeBox = false;
             MinimizeBox = false;
-            ClientSize = new Size(380, 320);
+            ClientSize = new Size(380, 340);
+
+            Panel top = new Panel();
+            top.Dock = DockStyle.Top;
+            top.Height = 66;
+            Controls.Add(top);
 
             Label info = new Label();
-            info.Text = "Tippe jetzt deine Tastenfolge. Pausen werden mit aufgenommen.";
-            info.Dock = DockStyle.Top;
-            info.Height = 40;
-            Controls.Add(info);
+            info.Text = "Tippe jetzt deine Tastenfolge.";
+            info.SetBounds(8, 8, 360, 20);
+            top.Controls.Add(info);
+
+            _chkPauses = new CheckBox();
+            _chkPauses.Text = "Pausen zwischen den Tasten aufnehmen";
+            _chkPauses.Checked = true;
+            _chkPauses.SetBounds(8, 34, 360, 24);
+            top.Controls.Add(_chkPauses);
 
             _list = new ListBox();
             _list.Dock = DockStyle.Fill;
@@ -174,7 +185,7 @@ namespace Multikeys
                 return;
 
             long now = _watch.ElapsedMilliseconds;
-            if (_lastMs >= 0)
+            if (_chkPauses.Checked && _lastMs >= 0)
             {
                 int gap = (int)(now - _lastMs);
                 if (gap >= 15)

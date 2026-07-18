@@ -86,7 +86,8 @@ Optionen: `Install-Multikeys.ps1 -NoAutostart` / `-NoShortcuts` / `-NoLaunch`.
    - **Taste …** – eine Taste aufnehmen und wählen: *Drücken*, *Halten* oder *Loslassen*.
    - **Pause …** – Wartezeit in Millisekunden (Länge frei wählbar).
    - **Text …** – beliebigen Text eintippen lassen.
-   - **Folge aufnehmen** – mehrere Tasten samt Pausen in einem Rutsch aufzeichnen.
+   - **Folge aufnehmen** – mehrere Tasten in einem Rutsch aufzeichnen; die Pausen
+     zwischen den Tasten werden mitgenommen und lassen sich per Häkchen abschalten.
    - **Ändern …** oder **Doppelklick** auf einen Schritt – Pausenlänge, Text oder Taste
      nachträglich anpassen.
 5. Sicherstellen, dass **Makros aktiv** und **Dieses Makro aktiv** angehakt sind.
