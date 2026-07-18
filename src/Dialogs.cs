@@ -193,6 +193,97 @@ namespace Multikeys
         }
     }
 
+    /// <summary>
+    /// Nimmt eine Tastenkombination auf: beliebige Modifier (Strg/Alt/Umschalt/Win)
+    /// plus eine Haupttaste. Wird fuer den globalen An/Aus-Hotkey verwendet.
+    /// </summary>
+    public sealed class HotkeyCaptureDialog : Form
+    {
+        private readonly MacroEngine _engine;
+        private readonly HashSet<int> _held = new HashSet<int>();
+        private readonly Label _preview;
+
+        public Hotkey Result { get; private set; }
+
+        public HotkeyCaptureDialog(MacroEngine engine)
+        {
+            _engine = engine;
+
+            Text = "Hotkey aufnehmen";
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            StartPosition = FormStartPosition.CenterParent;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            ClientSize = new Size(400, 160);
+
+            Label info = new Label();
+            info.Text = "Halte die gewuenschte Kombination gedrueckt\n(z. B. Strg + Alt + M).";
+            info.SetBounds(12, 12, 376, 40);
+            info.TextAlign = ContentAlignment.MiddleCenter;
+            Controls.Add(info);
+
+            _preview = new Label();
+            _preview.Text = "...";
+            _preview.SetBounds(12, 56, 376, 40);
+            _preview.TextAlign = ContentAlignment.MiddleCenter;
+            _preview.Font = new Font(Font.FontFamily, 13f, FontStyle.Bold);
+            Controls.Add(_preview);
+
+            Button cancel = new Button();
+            cancel.Text = "Abbrechen";
+            cancel.SetBounds(150, 112, 100, 30);
+            cancel.Click += (s, e) => { DialogResult = DialogResult.Cancel; Close(); };
+            Controls.Add(cancel);
+
+            Load += (s, e) =>
+            {
+                _engine.RecordedKey += OnRecorded;
+                _engine.RecordMode = true;
+            };
+            FormClosed += (s, e) =>
+            {
+                _engine.RecordMode = false;
+                _engine.RecordedKey -= OnRecorded;
+            };
+        }
+
+        private void OnRecorded(int vk, bool isDown)
+        {
+            if (isDown)
+                _held.Add(vk);
+            else
+                _held.Remove(vk);
+
+            bool ctrl = false, alt = false, shift = false, win = false;
+            foreach (int k in _held)
+            {
+                if (KeyMods.IsCtrl(k)) ctrl = true;
+                else if (KeyMods.IsAlt(k)) alt = true;
+                else if (KeyMods.IsShift(k)) shift = true;
+                else if (KeyMods.IsWin(k)) win = true;
+            }
+
+            // Erst wenn eine Nicht-Modifier-Taste gedrueckt wird, ist die Kombi vollstaendig.
+            if (isDown && !KeyMods.IsModifier(vk))
+            {
+                Result = new Hotkey { Vk = vk, Ctrl = ctrl, Alt = alt, Shift = shift, Win = win };
+                _engine.RecordMode = false;
+                DialogResult = DialogResult.OK;
+                Close();
+                return;
+            }
+
+            // Vorschau der bisher gehaltenen Modifier anzeigen.
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            if (ctrl) sb.Append("Strg + ");
+            if (alt) sb.Append("Alt + ");
+            if (shift) sb.Append("Umschalt + ");
+            if (win) sb.Append("Win + ");
+            sb.Append("...");
+            _preview.Text = sb.ToString();
+        }
+    }
+
     /// <summary>Einfacher Text-/Zahlen-Eingabedialog (Ersatz fuer InputBox).</summary>
     public static class InputDialog
     {

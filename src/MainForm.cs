@@ -12,6 +12,9 @@ namespace Multikeys
 
         // Steuerelemente
         private CheckBox _chkEngine;
+        private Label _lblHotkey;
+        private Button _btnHkCapture;
+        private Button _btnHkClear;
         private ListBox _lstMacros;
         private Button _btnAddMacro;
         private Button _btnDelMacro;
@@ -41,10 +44,12 @@ namespace Multikeys
             BuildUi();
 
             _engine.MacroTriggered += OnMacroTriggered;
+            _engine.EngineToggled += OnEngineToggled;
             _engine.UpdateConfig(_config);
             _engine.Start();
 
             _chkEngine.Checked = _config.EngineEnabled;
+            UpdateHotkeyLabel();
             RefreshMacroList();
             LoadEditor(null);
         }
@@ -59,8 +64,8 @@ namespace Multikeys
         private void BuildUi()
         {
             Text = "Multikeys - Tastatur-Makros";
-            ClientSize = new Size(720, 500);
-            MinimumSize = new Size(720, 500);
+            ClientSize = new Size(720, 540);
+            MinimumSize = new Size(720, 540);
             StartPosition = FormStartPosition.CenterScreen;
             Font = new Font("Segoe UI", 9f);
 
@@ -82,25 +87,59 @@ namespace Multikeys
             hint.ForeColor = Color.DimGray;
             Controls.Add(hint);
 
+            // ---- Zeile: globaler An/Aus-Hotkey
+            Label lblHk = new Label { Text = "An/Aus-Hotkey:", Left = 12, Top = 46, Width = 95 };
+            Controls.Add(lblHk);
+
+            _lblHotkey = new Label
+            {
+                Left = 110,
+                Top = 43,
+                Width = 170,
+                Height = 24,
+                BorderStyle = BorderStyle.FixedSingle,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Text = "(keiner)"
+            };
+            Controls.Add(_lblHotkey);
+
+            _btnHkCapture = new Button { Text = "Aufnehmen", Left = 288, Top = 42, Width = 100 };
+            _btnHkCapture.Click += (s, e) => CaptureHotkey();
+            Controls.Add(_btnHkCapture);
+
+            _btnHkClear = new Button { Text = "Entfernen", Left = 392, Top = 42, Width = 95 };
+            _btnHkClear.Click += (s, e) => ClearHotkey();
+            Controls.Add(_btnHkClear);
+
+            Label hkHint = new Label
+            {
+                Text = "schaltet alle Makros um",
+                Left = 495,
+                Top = 46,
+                Width = 210,
+                ForeColor = Color.DimGray
+            };
+            Controls.Add(hkHint);
+
             // ---- Linke Spalte: Liste der Makros
-            Label lblMacros = new Label { Text = "Makros:", Left = 12, Top = 44, Width = 200 };
+            Label lblMacros = new Label { Text = "Makros:", Left = 12, Top = 78, Width = 200 };
             Controls.Add(lblMacros);
 
             _lstMacros = new ListBox();
-            _lstMacros.SetBounds(12, 66, 240, 360);
+            _lstMacros.SetBounds(12, 100, 240, 360);
             _lstMacros.SelectedIndexChanged += (s, e) => { if (!_loading) LoadEditor(Current); };
             Controls.Add(_lstMacros);
 
-            _btnAddMacro = new Button { Text = "Neu", Left = 12, Top = 432, Width = 115 };
+            _btnAddMacro = new Button { Text = "Neu", Left = 12, Top = 466, Width = 115 };
             _btnAddMacro.Click += (s, e) => AddMacro();
             Controls.Add(_btnAddMacro);
 
-            _btnDelMacro = new Button { Text = "Loeschen", Left = 137, Top = 432, Width = 115 };
+            _btnDelMacro = new Button { Text = "Loeschen", Left = 137, Top = 466, Width = 115 };
             _btnDelMacro.Click += (s, e) => DeleteMacro();
             Controls.Add(_btnDelMacro);
 
             // ---- Rechte Spalte: Editor
-            GroupBox box = new GroupBox { Text = "Makro bearbeiten", Left = 268, Top = 44, Width = 440, Height = 382 };
+            GroupBox box = new GroupBox { Text = "Makro bearbeiten", Left = 268, Top = 78, Width = 440, Height = 382 };
             Controls.Add(box);
 
             Label lblName = new Label { Text = "Name:", Left = 14, Top = 28, Width = 90 };
@@ -176,7 +215,7 @@ namespace Multikeys
             _btnStepDel = MakeStepButton(box, "Entfernen", bx, ref by, bw);
             _btnStepDel.Click += (s, e) => RemoveStep();
 
-            _lblStatus = new Label { Left = 268, Top = 432, Width = 440, Height = 40, ForeColor = Color.SteelBlue };
+            _lblStatus = new Label { Left = 268, Top = 466, Width = 440, Height = 40, ForeColor = Color.SteelBlue };
             _lblStatus.Text = "Konfiguration: " + ConfigStore.ConfigPath;
             Controls.Add(_lblStatus);
 
@@ -298,6 +337,53 @@ namespace Multikeys
             RefreshMacroList();
             LoadEditor(Current);
             Save();
+        }
+
+        private void UpdateHotkeyLabel()
+        {
+            _lblHotkey.Text = _config.ToggleHotkey != null ? _config.ToggleHotkey.ToString() : "(keiner)";
+        }
+
+        private void CaptureHotkey()
+        {
+            using (HotkeyCaptureDialog dlg = new HotkeyCaptureDialog(_engine))
+            {
+                if (dlg.ShowDialog(this) == DialogResult.OK && dlg.Result != null)
+                {
+                    _config.ToggleHotkey = dlg.Result;
+                    UpdateHotkeyLabel();
+                    Save();
+                }
+            }
+        }
+
+        private void ClearHotkey()
+        {
+            _config.ToggleHotkey = new Hotkey();
+            UpdateHotkeyLabel();
+            Save();
+        }
+
+        private void OnEngineToggled(bool newState)
+        {
+            if (IsDisposed) return;
+            try
+            {
+                BeginInvoke((Action)(() =>
+                {
+                    _loading = true;
+                    _chkEngine.Checked = newState;
+                    _loading = false;
+                    _lblStatus.Text = (newState ? "Makros EINGESCHALTET" : "Makros AUSGESCHALTET")
+                        + "   (" + DateTime.Now.ToString("HH:mm:ss") + ")";
+                    try { ConfigStore.Save(_config); } catch { }
+                    if (_tray != null)
+                        _tray.ShowBalloonTip(1200, "Multikeys",
+                            newState ? "Makros eingeschaltet" : "Makros ausgeschaltet",
+                            ToolTipIcon.Info);
+                }));
+            }
+            catch { }
         }
 
         private void CaptureTrigger()

@@ -15,6 +15,8 @@ dadurch **mit jeder Tastatur** – unabhängig vom Hersteller, ohne spezielle Tr
 - **Text tippen** (Unicode, layoutunabhängig).
 - **Ganze Folge aufnehmen**: einfach tippen, Multikeys merkt sich Tasten und Zeiten.
 - **Trigger-Taste unterdrücken** (optional), damit die Originaltaste nichts anderes auslöst.
+- **Globaler An/Aus-Hotkey**: eine frei wählbare Tastenkombination (z. B. `Strg + Alt + M`)
+  schaltet alle Makros um – auch wenn das Fenster im Infobereich liegt.
 - **Mehrere Makros** gleichzeitig, jederzeit ein- und ausschaltbar.
 - **Automatisches Speichern** unter `%APPDATA%\Multikeys\config.json`.
 - Läuft unauffällig im **Infobereich** (Systray) weiter.
@@ -47,6 +49,13 @@ direkt starten.
 6. Fenster minimieren – Multikeys läuft im Infobereich weiter.
 
 Ab jetzt löst die Trigger-Taste die Tastenfolge aus.
+
+### Globalen An/Aus-Hotkey festlegen
+
+Oben bei **An/Aus-Hotkey** auf **Aufnehmen** klicken und die gewünschte Kombination
+gedrückt halten (z. B. `Strg + Alt + M`). Dieser Hotkey schaltet danach jederzeit
+**alle** Makros an bzw. aus – auch aus dem Infobereich heraus, selbst wenn die Makros
+gerade deaktiviert sind. Mit **Entfernen** wird der Hotkey wieder gelöscht.
 
 > Tipp: Wähle als Trigger am besten eine Taste, die du sonst selten brauchst
 > (z. B. eine Zusatztaste, F-Taste oder eine Kombination über eine seltene Taste),
