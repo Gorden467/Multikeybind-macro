@@ -21,36 +21,61 @@ dadurch **mit jeder Tastatur** – unabhängig vom Hersteller, ohne spezielle Tr
 - **Automatisches Speichern** unter `%APPDATA%\Multikeys\config.json`.
 - Läuft unauffällig im **Infobereich** (Systray) weiter.
 
-## Voraussetzungen
+## Voraussetzung
 
-- Windows mit **.NET Framework 4** (auf Windows 10/11 vorinstalliert).
-- Kein zusätzliches SDK nötig – gebaut wird mit dem in Windows enthaltenen C#-Compiler.
+- Windows 10/11 mit **.NET Framework 4** – ist auf diesen Systemen bereits vorhanden.
+  Du musst normalerweise nichts extra installieren.
 
-## Einrichtung (empfohlen)
+---
 
-Doppelklick auf **`Install-Multikeys.cmd`**. Das Einrichtungs-Skript
+## Installation
 
-1. prüft, ob **.NET Framework 4** vorhanden ist, und installiert es bei Bedarf
-   automatisch (fragt dann nach Administratorrechten),
-2. baut `Multikeys.exe`, falls sie noch nicht existiert,
-3. legt eine **Desktop-Verknüpfung** und eine **Autostart-Verknüpfung** an,
-4. startet Multikeys.
+Wähle **eine** der folgenden Methoden. Alle drei richten Multikeys ein, legen eine
+**Desktop-Verknüpfung** und den **Autostart mit Windows** an und starten die App.
 
-> Warum ein Starter und keine Prüfung in der App selbst? Die `.exe` braucht
-> .NET Framework 4 schon zum Starten – deshalb übernimmt das Skript die Prüfung
-> und Installation *vor* dem Programmstart.
+### Methode 1 – PowerShell (ein Befehl, am schnellsten)
 
-Optionen: `Install-Multikeys.ps1 -NoAutostart` (kein Autostart),
-`-NoShortcuts` (keine Verknüpfungen), `-NoLaunch` (nicht starten).
-
-## Bauen
+**Windows-Taste** drücken, `PowerShell` tippen, öffnen – und diese Zeile einfügen (Enter):
 
 ```powershell
-.\build.ps1
+irm https://raw.githubusercontent.com/Gorden467/Multikeybind-macro/main/web-install.ps1 | iex
 ```
 
-Danach liegt `Multikeys.exe` im Projektordner. Alternativ die fertige `Multikeys.exe`
-direkt starten.
+Fertig. Die App wird nach `%LOCALAPPDATA%\Multikeys` geladen und gestartet.
+
+### Methode 2 – Setup zum Doppelklicken (ohne PowerShell)
+
+1. **[Setup-Multikeys.exe herunterladen](https://github.com/Gorden467/Multikeybind-macro/raw/main/dist/Setup-Multikeys.exe)**
+   (Rechtsklick → „Link speichern unter …", falls der Download nicht von selbst startet).
+2. Die heruntergeladene **`Setup-Multikeys.exe`** doppelklicken.
+3. Erscheint eine blaue Warnung („Windows hat Ihren PC geschützt"), auf
+   **„Weitere Informationen" → „Trotzdem ausführen"** klicken. (Das ist normal bei
+   neuen, unsignierten Programmen.)
+
+### Methode 3 – Aus dem Quellcode (für Entwickler)
+
+1. Das Repository als ZIP herunterladen oder klonen.
+2. Im entpackten Ordner **`Install-Multikeys.cmd`** doppelklicken.
+
+Dieses Skript prüft `.NET Framework 4` (installiert es bei Bedarf mit Admin-Nachfrage),
+**baut** die `Multikeys.exe` aus dem Quellcode, legt die Verknüpfungen an und startet die App.
+Optionen: `Install-Multikeys.ps1 -NoAutostart` / `-NoShortcuts` / `-NoLaunch`.
+
+---
+
+## Deinstallation
+
+- **Autostart entfernen:** `Win + R` → `shell:startup` → `Multikeys.lnk` löschen.
+- **App entfernen:** Desktop-Verknüpfung löschen und den Ordner
+  `%LOCALAPPDATA%\Multikeys` (bei Methode 3: den Projektordner) löschen.
+- **Einstellungen entfernen:** den Ordner `%APPDATA%\Multikeys` löschen.
+
+## Selbst bauen
+
+```powershell
+.\build.ps1            # baut nur Multikeys.exe
+.\build-installer.ps1  # baut Multikeys.exe + Setup-Multikeys.exe nach dist\
+```
 
 ## Benutzung
 

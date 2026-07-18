@@ -5,6 +5,10 @@
 bin/
 obj/
 
+# Ausnahme: die fertigen Download-Dateien werden mitgeliefert
+!dist/Multikeys.exe
+!dist/Setup-Multikeys.exe
+
 # Editor / IDE
 .vs/
 .vscode/
