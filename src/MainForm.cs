@@ -30,6 +30,7 @@ namespace Multikeys
         private Button _btnAddDelay;
         private Button _btnAddText;
         private Button _btnRecordSeq;
+        private Button _btnStepEdit;
         private Button _btnStepUp;
         private Button _btnStepDown;
         private Button _btnStepDel;
@@ -64,8 +65,8 @@ namespace Multikeys
         private void BuildUi()
         {
             Text = "Multikeys - Tastatur-Makros";
-            ClientSize = new Size(720, 540);
-            MinimumSize = new Size(720, 540);
+            ClientSize = new Size(720, 600);
+            MinimumSize = new Size(720, 600);
             StartPosition = FormStartPosition.CenterScreen;
             Font = new Font("Segoe UI", 9f);
 
@@ -126,20 +127,20 @@ namespace Multikeys
             Controls.Add(lblMacros);
 
             _lstMacros = new ListBox();
-            _lstMacros.SetBounds(12, 100, 240, 360);
+            _lstMacros.SetBounds(12, 100, 240, 422);
             _lstMacros.SelectedIndexChanged += (s, e) => { if (!_loading) LoadEditor(Current); };
             Controls.Add(_lstMacros);
 
-            _btnAddMacro = new Button { Text = "Neu", Left = 12, Top = 466, Width = 115 };
+            _btnAddMacro = new Button { Text = "Neu", Left = 12, Top = 528, Width = 115 };
             _btnAddMacro.Click += (s, e) => AddMacro();
             Controls.Add(_btnAddMacro);
 
-            _btnDelMacro = new Button { Text = "Loeschen", Left = 137, Top = 466, Width = 115 };
+            _btnDelMacro = new Button { Text = "Loeschen", Left = 137, Top = 528, Width = 115 };
             _btnDelMacro.Click += (s, e) => DeleteMacro();
             Controls.Add(_btnDelMacro);
 
             // ---- Rechte Spalte: Editor
-            GroupBox box = new GroupBox { Text = "Makro bearbeiten", Left = 268, Top = 78, Width = 440, Height = 382 };
+            GroupBox box = new GroupBox { Text = "Makro bearbeiten", Left = 268, Top = 78, Width = 440, Height = 444 };
             Controls.Add(box);
 
             Label lblName = new Label { Text = "Name:", Left = 14, Top = 28, Width = 90 };
@@ -200,11 +201,12 @@ namespace Multikeys
             };
             box.Controls.Add(_chkSuppress);
 
-            Label lblSteps = new Label { Text = "Schritte (werden von oben nach unten abgespielt):", Left = 14, Top = 122, Width = 410 };
+            Label lblSteps = new Label { Text = "Schritte (von oben nach unten; Doppelklick zum Aendern):", Left = 14, Top = 122, Width = 410 };
             box.Controls.Add(lblSteps);
 
-            _lstSteps = new ListBox { Left = 14, Top = 144, Width = 280, Height = 224 };
+            _lstSteps = new ListBox { Left = 14, Top = 144, Width = 280, Height = 280 };
             _lstSteps.Font = new Font("Consolas", 9f);
+            _lstSteps.DoubleClick += (s, e) => EditStep();
             box.Controls.Add(_lstSteps);
 
             int bx = 302, bw = 122, by = 144;
@@ -216,7 +218,9 @@ namespace Multikeys
             _btnAddText.Click += (s, e) => AddTextStep();
             _btnRecordSeq = MakeStepButton(box, "Folge aufnehmen", bx, ref by, bw);
             _btnRecordSeq.Click += (s, e) => RecordSequence();
-            by += 12;
+            by += 8;
+            _btnStepEdit = MakeStepButton(box, "Aendern ...", bx, ref by, bw);
+            _btnStepEdit.Click += (s, e) => EditStep();
             _btnStepUp = MakeStepButton(box, "Nach oben", bx, ref by, bw);
             _btnStepUp.Click += (s, e) => MoveStep(-1);
             _btnStepDown = MakeStepButton(box, "Nach unten", bx, ref by, bw);
@@ -224,7 +228,7 @@ namespace Multikeys
             _btnStepDel = MakeStepButton(box, "Entfernen", bx, ref by, bw);
             _btnStepDel.Click += (s, e) => RemoveStep();
 
-            _lblStatus = new Label { Left = 268, Top = 466, Width = 440, Height = 40, ForeColor = Color.SteelBlue };
+            _lblStatus = new Label { Left = 268, Top = 528, Width = 440, Height = 40, ForeColor = Color.SteelBlue };
             _lblStatus.Text = "Konfiguration: " + ConfigStore.ConfigPath;
             Controls.Add(_lblStatus);
 
@@ -287,6 +291,7 @@ namespace Multikeys
             _btnAddDelay.Enabled = has;
             _btnAddText.Enabled = has;
             _btnRecordSeq.Enabled = has;
+            _btnStepEdit.Enabled = has;
             _btnStepUp.Enabled = has;
             _btnStepDown.Enabled = has;
             _btnStepDel.Enabled = has;
@@ -474,6 +479,43 @@ namespace Multikeys
             m.Steps.Insert(at, step);
             RefreshSteps();
             _lstSteps.SelectedIndex = at;
+            Save();
+        }
+
+        private void EditStep()
+        {
+            Macro m = Current;
+            if (m == null) return;
+            int i = _lstSteps.SelectedIndex;
+            if (i < 0 || i >= m.Steps.Count) return;
+            MacroStep step = m.Steps[i];
+
+            switch (step.Type)
+            {
+                case StepType.Delay:
+                    int? ms = InputDialog.AskNumber(this, "Pause aendern", "Pause in Millisekunden:", step.DelayMs);
+                    if (!ms.HasValue) return;
+                    step.DelayMs = ms.Value;
+                    break;
+
+                case StepType.Text:
+                    string text = InputDialog.AskText(this, "Text aendern", "Zu tippender Text:", step.Text);
+                    if (text == null) return;
+                    step.Text = text;
+                    break;
+
+                default: // KeyPress / KeyDown / KeyUp -> Taste und Aktion neu waehlen
+                    using (KeyCaptureDialog dlg = new KeyCaptureDialog(_engine, true))
+                    {
+                        if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                        step.Type = dlg.ChosenKind;
+                        step.VkCode = dlg.CapturedVk;
+                    }
+                    break;
+            }
+
+            RefreshSteps();
+            _lstSteps.SelectedIndex = i;
             Save();
         }
 
