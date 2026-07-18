@@ -1,0 +1,15 @@
+# Build-Ausgabe
+*.exe
+*.pdb
+*.dll
+bin/
+obj/
+
+# Editor / IDE
+.vs/
+.vscode/
+*.user
+
+# Windows
+Thumbs.db
+Desktop.ini
